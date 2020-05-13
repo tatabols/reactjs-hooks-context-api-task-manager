@@ -29,6 +29,10 @@ const TaskListContextProvider = ({ children }) => {
     setEditItem(item);
   };
 
+  const cancelEditItem = id => {
+    setEditItem(null);
+  };
+
   const editTask = (id, title) => {
     const newTasks = tasks.map(task => (task.id === id ? { id, title } : task));
 
@@ -46,6 +50,7 @@ const TaskListContextProvider = ({ children }) => {
         clearTask,
         findItem,
         editTask,
+        cancelEditItem,
       }}
     >
       {children}
