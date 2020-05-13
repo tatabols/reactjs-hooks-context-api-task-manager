@@ -1,31 +1,43 @@
-import React, { useState, createContext, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, createContext, useEffect, useReducer } from 'react';
+
+import TaskListReducer from '../reducer/TaskListReducer';
+import {
+  addTaskAction,
+  removeTaskAction,
+  clearTaskAction,
+  editTaskAction,
+} from '../actions/taskActions';
 
 export const TaskListContext = createContext();
 
 const TaskListContextProvider = ({ children }) => {
   const initialState = JSON.parse(localStorage.getItem('tasks')) || [];
-  const [tasks, setTasks] = useState(initialState);
+  const [state, dispatch] = useReducer(TaskListReducer, initialState);
   const [editItem, setEditItem] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem('tasks', JSON.stringify(state));
+  }, [state]);
 
   const addTask = title => {
-    setTasks([...tasks, { id: uuidv4(), title }]);
+    dispatch(addTaskAction(title));
   };
 
   const removeTask = id => {
-    setTasks(tasks.filter(task => task.id !== id));
+    dispatch(removeTaskAction(id));
   };
 
   const clearTask = () => {
-    setTasks([]);
+    dispatch(clearTaskAction());
+  };
+
+  const editTask = (id, title) => {
+    dispatch(editTaskAction(id, title));
+    setEditItem(null);
   };
 
   const findItem = id => {
-    const item = tasks.find(task => task.id === id);
+    const item = state.find(task => task.id === id);
     setEditItem(item);
   };
 
@@ -33,17 +45,10 @@ const TaskListContextProvider = ({ children }) => {
     setEditItem(null);
   };
 
-  const editTask = (id, title) => {
-    const newTasks = tasks.map(task => (task.id === id ? { id, title } : task));
-
-    setTasks(newTasks);
-    setEditItem(null);
-  };
-
   return (
     <TaskListContext.Provider
       value={{
-        tasks,
+        tasks: state,
         editItem,
         addTask,
         removeTask,
